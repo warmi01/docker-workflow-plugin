@@ -1,12 +1,14 @@
 
 node {
-  git '/tmp/repo'
+   git '/tmp/repo'
 
-    docker.withRegistry('https://docker.example.com/', 'docker-registry-login') {
+   docker.withRegistry('https://docker.example.com/', 'docker-registry-login') {
     
-    stage 'Bake Docker image'
-    sh 'cp demoapp/Docker_v1.0 demoapp/Dockerfile'
-    def pcImg = docker.build('demoapp:1.0','demoapp')
-    sleep 3
-    sh 'docker run -v /var/run/docker.sock:/var/run/docker.sock -d -i -p 8090:8080 demoapp:1.0'
+     stage 'Bake Docker image'
+     sh 'cp demoapp/Docker_v1.0 demoapp/Dockerfile'
+     def pcImg = docker.build('demoapp:1.0','demoapp')
+     pcImg.inside('-d -i -p 8082:8080') {
+        input "How does it look?"
+     }
+   }
 }
