@@ -1,0 +1,15 @@
+FROM node:4-onbuild
+# replace this with your application's default port
+EXPOSE 8080
+
+# Replicate Platform environment vars
+ENV OPENSHIFT_NODEJS_PORT 8080
+# listen on all interfaces or requests will not reach the container.
+ENV OPENSHIFT_NODEJS_IP 0.0.0.0
+
+# Demo Test config
+ENV DEMOAPP_VERSION 1.4
+ENV DEMOAPP_COLOR purple
+ENV DEMOAPP_STATUS_INIT 200 OK 
+ENV DEMOTEST_STAGE integration
+ENV DEMOTEST_APP_LINK_ALIAS app:8080
