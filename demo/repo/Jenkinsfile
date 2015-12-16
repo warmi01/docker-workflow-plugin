@@ -5,31 +5,42 @@ node {
     
      stage 'Build and Run Docker Image 1.0'
      sh 'cp demoapp/Docker_v1.0 demoapp/Dockerfile'
-     def pcImg = docker.build('demoapp:1.0','demoapp')
-     def container = pcImg.run('-d -i -p 8082:8080')
+     def image = docker.build('demoapp:1.0','demoapp')
+     def container = image.run('-d -i -p 8082:8080 --name demoapp_rt')
+     
+     sh 'cp demotest/Docker_Contract demotest/Dockerfile'
+     image = docker.build('demotest_con:2.3','demotest')
+     def container2 = image.run('-d -i -p 8083:8080 --link demoapp_rt:app --name demotest_rt')
      input "How does v1.0 look?"
      container.stop()
+     container2.stop()
 
      stage 'Build and Run Docker Image 2.0'
      sh 'cp demoapp/Docker_v2.0 demoapp/Dockerfile'
-     pcImg = docker.build('demoapp:2.0','demoapp')
-     container = pcImg.run('-d -i -p 8082:8080')
+     image = docker.build('demoapp:2.0','demoapp')
+     container = image.run('-d -i -p 8082:8080 --name demoapp_rt')
+     container2 = image.run('-d -i -p 8083:8080 --link demoapp_rt:app --name demotest_rt')
      input "How does v2.0 look?"
      container.stop()
+     container2.stop()
 
      stage 'Build and Run Docker Image 2.1'
      sh 'cp demoapp/Docker_v2.1 demoapp/Dockerfile'
-     pcImg = docker.build('demoapp:2.1','demoapp')
-     container = pcImg.run('-d -i -p 8082:8080')
+     image = docker.build('demoapp:2.1','demoapp')
+     container = image.run('-d -i -p 8082:8080 --name demoapp_rt')
+     container2 = image.run('-d -i -p 8083:8080 --link demoapp_rt:app --name demotest_rt')
      input "How does v2.1 look?"
      container.stop()
+     container2.stop()
 
      stage 'Build and Run Docker Image 3.0'
      sh 'cp demoapp/Docker_v3.0 demoapp/Dockerfile'
-     pcImg = docker.build('demoapp:3.0','demoapp')
-     container = pcImg.run('-d -i -p 8082:8080')
+     image = docker.build('demoapp:3.0','demoapp')
+     container = image.run('-d -i -p 8082:8080 --name demoapp_rt')
+     container2 = image.run('-d -i -p 8083:8080 --link demoapp_rt:app --name demotest_rt')
      input "How does v3.0 look?"
      container.stop()
+     container2.stop()
 
    }
 }
