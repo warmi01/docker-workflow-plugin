@@ -44,8 +44,8 @@ node
       retry(10)
       {
          sleep 3
-         sh 'docker exec -t demoapp_contract$BUILD_ID curl --silent --show-error localhost:8080'
-         sh 'docker exec -t demotest_contract$BUILD_ID curl --silent --show-error localhost:8080'
+         sh 'docker exec -t demoapp_contract$BUILD_ID curl --write-out "\n" localhost:8080/status'
+         sh 'docker exec -t demotest_contract$BUILD_ID curl --write-out "\n" localhost:8080/status'
       }
 
       echo '***** Execute test on test container'
@@ -91,8 +91,8 @@ node
       retry(10)
       {
          sleep 3
-         sh 'docker exec -t demoapp_integration$BUILD_ID curl --silent --show-error localhost:8080'
-         sh 'docker exec -t demotest_integration$BUILD_ID curl --silent --show-error localhost:8080'
+         sh 'docker exec -t demoapp_integration$BUILD_ID curl --write-out "\n" localhost:8080/status'
+         sh 'docker exec -t demotest_integration$BUILD_ID curl --write-out "\n" localhost:8080/status'
       }
 
       echo '***** Execute test on test container'
