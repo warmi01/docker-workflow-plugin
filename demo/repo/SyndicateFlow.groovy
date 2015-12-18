@@ -1,10 +1,21 @@
+// Test to see Jenkins workflow build parameter has been defined
+try
+{
+   APP_VERSION
+}
+catch (all)
+{
+   error 'APP_VERSION build parameter must be defined in Jenkins workflow configuration'
+}
+
 node
 {
    git '/tmp/repo'
 
    stage '***** Integration Stage'
    
-   sh 'cp demoapp/Docker_v1.0 demoapp/Dockerfile'
+   // Get app version from Jenkins build parameter
+   sh 'cp demoapp/Docker_v' + APP_VERSION + ' demoapp/Dockerfile'
    sh 'cp demotest/Docker_Integration demotest/Dockerfile'
 
    def appimage
@@ -12,6 +23,7 @@ node
    def appcontainer
    def testcontainer
 
+   echo '***** Build app and test Docker images'
    parallel "Building Docker app image":
    {
       appimage = docker.build('demoapp:integration','demoapp')
@@ -28,7 +40,7 @@ node
       appcontainer = appimage.run('-d -i -p 8082:8080 --name demoapp_integration$BUILD_ID')
       testcontainer = testimage.run('-d -i -p 8083:8080 --link demoapp_integration$BUILD_ID:app --name demotest_integration$BUILD_ID')
 
-      echo '***** Wait for app and test containers to start up'
+      echo '***** Preparing for testing...Wait for app and test containers to start up'
       retry(10)
       {
          sleep 3
@@ -48,6 +60,8 @@ node
    }
    catch(all)
    {
+      // Force build failure.
+      // Don't go any futher after cleanup in finally block
       error 'Integration stage failed'
    }
    finally
@@ -71,7 +85,7 @@ node
       appcontainer = appimage.run('-d -i -p 8084:8080 --name demoapp_preprod$BUILD_ID')
       testcontainer = testimage.run('-d -i -p 8085:8080 --link demoapp_preprod$BUILD_ID:app --name demotest_preprod$BUILD_ID')
 
-      echo '***** Wait for app and test containers to start up'
+      echo '***** Preparing for testing...Wait for app and test containers to start up'
       retry(10)
       {
          sleep 3
@@ -91,6 +105,8 @@ node
    }
    catch(all)
    {
+      // Force build failure.
+      // Don't go any futher after cleanup in finally block
       error 'Pre-production stage failed'
    }
    finally
