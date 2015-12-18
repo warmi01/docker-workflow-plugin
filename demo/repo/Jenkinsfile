@@ -1,46 +1,35 @@
+
 node {
    git '/tmp/repo'
 
    docker.withRegistry('https://docker.example.com/', 'docker-registry-login') {
-    
-     stage 'Build and Run Docker Image 1.0'
-     sh 'cp demoapp/Docker_v1.0 demoapp/Dockerfile'
-     def image = docker.build('demoapp:1.0','demoapp')
-     def container = image.run('-d -i -p 8082:8080 --name demoapp_rt')
-     
+
+     stage 'contract'
+     sh 'cp demoapp/Docker_v' + APP_VERSION + ' demoapp/Dockerfile'
+     def app_image = docker.build('demoapp','demoapp')
+     def app_container_8082 = app_image.run('-i -p 8082:8080 --name demoapp_8082')
+
      sh 'cp demotest/Docker_Contract demotest/Dockerfile'
-     image = docker.build('demotest_con:2.3','demotest')
-     def container2 = image.run('-d -i -p 8083:8080 --link demoapp_rt:app --name demotest_rt')
-     input "How does v1.0 look?"
-     container.stop()
-     container2.stop()
+     def contract_image = docker.build('demotest_con:2.3','demotest')
+     def contract_container = contract_image.run('-i -p 8084:8080 --link demoapp_8082:app --name demotest_rt')
+     input "How does contract look?"
+     contract_container.stop()
 
-     stage 'Build and Run Docker Image 2.0'
-     sh 'cp demoapp/Docker_v2.0 demoapp/Dockerfile'
-     image = docker.build('demoapp:2.0','demoapp')
-     container = image.run('-d -i -p 8082:8080 --name demoapp_rt')
-     container2 = image.run('-d -i -p 8083:8080 --link demoapp_rt:app --name demotest_rt')
-     input "How does v2.0 look?"
-     container.stop()
-     container2.stop()
+     stage 'integration'
 
-     stage 'Build and Run Docker Image 2.1'
-     sh 'cp demoapp/Docker_v2.1 demoapp/Dockerfile'
-     image = docker.build('demoapp:2.1','demoapp')
-     container = image.run('-d -i -p 8082:8080 --name demoapp_rt')
-     container2 = image.run('-d -i -p 8083:8080 --link demoapp_rt:app --name demotest_rt')
-     input "How does v2.1 look?"
-     container.stop()
-     container2.stop()
+     try {
+        docker.script.sh "docker inspect -f . demoapp_8083"
+        docker.script.sh "docker stop demoapp_8083 && docker rm -f demoapp_8083"
+     } catch (hudson.AbortException e) {
+     }
 
-     stage 'Build and Run Docker Image 3.0'
-     sh 'cp demoapp/Docker_v3.0 demoapp/Dockerfile'
-     image = docker.build('demoapp:3.0','demoapp')
-     container = image.run('-d -i -p 8082:8080 --name demoapp_rt')
-     container2 = image.run('-d -i -p 8083:8080 --link demoapp_rt:app --name demotest_rt')
-     input "How does v3.0 look?"
-     container.stop()
-     container2.stop()
+     def app_container_8083 = app_image.run('-i -p 8083:8080 --name demoapp_8083')
+     def integration_image = docker.build('demotest_integration:1.4','demotest')
+     def integration_container = integration_image.run('-i -p 8084:8080 --link demoapp_8083:app --name demotest_rt')
+
+     input "How does integration look?"
+     app_container_8082.stop()
+     integration_container.stop()
 
    }
 }

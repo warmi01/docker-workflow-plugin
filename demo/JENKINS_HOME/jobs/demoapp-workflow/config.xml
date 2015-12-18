@@ -3,7 +3,19 @@
   <actions/>
   <description>Demonstrates Demo App Pipeline Using Docker Images and Plugin</description>
   <keepDependencies>false</keepDependencies>
-  <properties/>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>APP_VERSION</name>
+          <description>This parameter is to simulate the event of an update being pushed to the source repository, triggering Jenkins to run this build script.
+
+Source updates are represented by different versions of the demo app (Docker files): Docker_v1.0, Docker_v2.0, Docker_v2.1, Docker_v3.0</description>
+          <defaultValue>1.0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
   <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition">
     <scm class="hudson.plugins.git.GitSCM">
       <configVersion>2</configVersion>
