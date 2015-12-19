@@ -92,13 +92,13 @@ node
       retry(10)
       {
          sleep 3
-         sh 'docker exec -t demoapp_integration$BUILD_ID curl --write-out "\n" localhost:8080/status'
-         sh 'docker exec -t demotest_integration$BUILD_ID curl --write-out "\n" localhost:8080/status'
+         sh 'docker exec -t demoapp_integration curl --write-out "\n" localhost:8080/status'
+         sh 'docker exec -t demotest_integration curl --write-out "\n" localhost:8080/status'
       }
 
       echo '***** Execute test on test container'
       // This will output results to console output
-      sh 'docker exec -t demotest_integration$BUILD_ID curl --write-out "\n" localhost:8080/test'
+      sh 'docker exec -t demotest_integration curl --write-out "\n" localhost:8080/test'
 
       input "Integration image ok?"
 
