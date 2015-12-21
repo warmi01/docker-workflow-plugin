@@ -2,6 +2,7 @@
 try
 {
    APP_VERSION
+   echo '***** Workflow running for demoapp v' + APP_VERSION
 }
 catch (all)
 {
@@ -49,10 +50,21 @@ node
       }
 
       echo '***** Execute test on test container'
-      // This will output results to console output
-      sh 'docker exec -t demotest_contract$BUILD_ID curl --write-out "\n" localhost:8080/test'
+      // This will execute the test from inside the test container.
+      // The output will be piped to a file so that it can be read into a
+      // variable to process the test output.
+      sh 'docker exec -t demotest_contract$BUILD_ID curl --write-out "\n" localhost:8080/test > test.txt'
+      def testoutput = readFile('test.txt')
+      echo testoutput
 
-      input "Contract image ok?"
+      if (testoutput.contains('pass: true'))
+      {
+         input 'Contract test passed. Continue?'
+      }
+      else
+      {
+         error 'Contract test failed...Aborting build.'
+      }
 
       echo '***** Image verified...Tagging app image for integration'
       appimage.tag('integration', true)
@@ -96,10 +108,21 @@ node
       }
 
       echo '***** Execute test on test container'
-      // This will output results to console output
-      sh 'docker exec -t demotest_integration$BUILD_ID curl --write-out "\n" localhost:8080/test'
+      // This will execute the test from inside the test container.
+      // The output will be piped to a file so that it can be read into a
+      // variable to process the test output.
+      sh 'docker exec -t demotest_integration$BUILD_ID curl --write-out "\n" localhost:8080/test > test.txt'
+      def testoutput = readFile('test.txt')
+      echo testoutput
 
-      input "Integration image ok?"
+      if (testoutput.contains('pass: true'))
+      {
+         input 'Integration test passed. Continue?'
+      }
+      else
+      {
+         error 'Integration test failed...Aborting build.'
+      }
 
       echo '***** Image verified...Tagging images for production'
       appimage.tag('prod', true)
