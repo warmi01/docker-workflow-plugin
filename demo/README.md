@@ -3,8 +3,10 @@ Docker image for Docker workflow demo
 This image contains a "Docker Workflow" Job that demonstrates Jenkins Workflow integration
 with Docker via [CloudBees Docker Workflow](https://wiki.jenkins-ci.org/display/JENKINS/CloudBees+Docker+Workflow+Plugin) plugin.
 
+NOTE: the original command string below has been modifed to include '-v /var/run/docker.sock:/var/run/docker.sock', which is important for allowing the inner docker commands within Jenkins workflow to run in the outer docker that Jenkins runs in (i.e. shared docker images/containers, ports accessible to host, etc.):
 ```
-docker run --rm -p 8080:8080 -p 8081:8081 -p 8022:22 --add-host=docker.example.com:127.0.0.1 -ti --privileged jenkinsci/docker-workflow-demo
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock -p 8080:8080 -p 8081:8081 -p 8022:22 --add-host=docker.example.com:127.0.0.1 -ti --privileged jenkinsci/docker-workflow-demo:1.0
+
 ```
 
 The "Docker Workflow" Job simply does the following:
