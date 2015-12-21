@@ -69,7 +69,7 @@ node
       echo '***** Image verified...Tagging app image for integration'
       appimage.tag('integration', true)
    }
-   catch(all)
+   catch (all)
    {
       // Force build failure.
       // Don't go any futher after cleanup in finally block
@@ -79,8 +79,21 @@ node
    {
       // Executes when user aborts from input.
       // Stops and removes containers
-      appcontainer.stop()
-      testcontainer.stop()
+      try
+      {
+         appcontainer.stop()          
+      }
+      catch (all)
+      {    
+      }
+      
+      try
+      {
+         testcontainer.stop()          
+      }
+      catch (all)
+      {
+      }
    }
    
    
@@ -96,14 +109,23 @@ node
 
    try
    {
-      appcontainer = appimage.run('-d -i -p 8084:8080 --name demoapp_integration$BUILD_ID')
-      testcontainer = testimage.run('-d -i -p 8085:8080 --link demoapp_integration$BUILD_ID:app --name demotest_integration$BUILD_ID')
+      sh 'docker stop demoapp_integration && docker rename demoapp_integration demoapp_integration_prev'
+      echo '***** Backed up previous integration container'       
+   }
+   catch (all)
+   {
+   }
+   
+   try
+   {
+      appcontainer = appimage.run('-d -i -p 8084:8080 --name demoapp_integration')
+      testcontainer = testimage.run('-d -i -p 8085:8080 --link demoapp_integration:app --name demotest_integration$BUILD_ID')
 
       echo '***** Preparing for integration testing...Wait for app and test containers to start up'
       retry(10)
       {
          sleep 3
-         sh 'docker exec -t demoapp_integration$BUILD_ID curl --write-out "\n" localhost:8080/status'
+         sh 'docker exec -t demoapp_integration curl --write-out "\n" localhost:8080/status'
          sh 'docker exec -t demotest_integration$BUILD_ID curl --write-out "\n" localhost:8080/status'
       }
 
@@ -121,14 +143,44 @@ node
       }
       else
       {
+         input 'Integration test failed. (Pausing)'
          error 'Integration test failed...Aborting build.'
       }
 
-      echo '***** Image verified...Tagging images for production'
+      echo '***** Image verified...Tagging app image for production'
       appimage.tag('prod', true)
+      
+      try
+      {
+         // Remove backup of old integration container
+         sh 'docker rm demoapp_integration_prev'          
+      }
+      catch(all)
+      {
+      }
    }
    catch(all)
    {
+      echo 'Integration stage failed...Rolling back to previous version'
+      
+      // Remove current demoapp container
+      try
+      {
+         appcontainer.stop()          
+      }
+      catch (all2)
+      {
+      }
+      
+      // Start the previous container
+      try
+      {
+         sh 'docker rename demoapp_integration_prev demoapp_integration && docker start demoapp_integration'          
+      }
+      catch (all2)
+      {
+      }
+      
       // Force build failure.
       // Don't go any futher after cleanup in finally block
       error 'Integration stage failed'
@@ -137,9 +189,16 @@ node
    {
       // Executes when user aborts from input.
       // Stops and removes containers
-      appcontainer.stop()
-      testcontainer.stop()
+      try
+      {
+         testcontainer.stop()
+      }
+      catch (all)
+      {
+      }
    }
 
+   // The current integration container will continue to run at this point 
+   
    echo '***** Success...Image ready for production!'
 }
