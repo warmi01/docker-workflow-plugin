@@ -53,7 +53,7 @@ node
       // This will execute the test from inside the test container.
       // The output will be piped to a file so that it can be read into a
       // variable to process the test output.
-      sh 'docker exec -t demotest_contract$BUILD_ID curl --write-out "\n" localhost:8080/test > test.txt'
+      sh 'docker exec -t demotest_contract$BUILD_ID curl --write-out "\n" localhost:8080/test > test.txt 2>&1'
       def testoutput = readFile('test.txt')
       echo testoutput
 
@@ -133,7 +133,7 @@ node
       // This will execute the test from inside the test container.
       // The output will be piped to a file so that it can be read into a
       // variable to process the test output.
-      sh 'docker exec -t demotest_integration$BUILD_ID curl --write-out "\n" localhost:8080/test > test.txt'
+      sh 'docker exec -t demotest_integration$BUILD_ID curl --write-out "\n" localhost:8080/test > test.txt 2>&1'
       def testoutput = readFile('test.txt')
       echo testoutput
 
