@@ -13,13 +13,13 @@ import javax.servlet.http.HttpServletResponse;
  * Servlet implementation class TestServlet
  */
 @WebServlet("/TestServlet")
-public class TestServlet extends HttpServlet {
+public class SimpleServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public TestServlet() {
+    public SimpleServlet() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -28,10 +28,6 @@ public class TestServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		/*response.setContentType("text/html");
-		PrintWriter out = response.getWriter();
-		out.print("<html><body><h3>hello from servlet</h3></body></html>");*/
-		
 		handleRequest(request, response);
 
 	}
@@ -51,18 +47,27 @@ public class TestServlet extends HttpServlet {
 	 */
 	public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		response.setContentType("text/html");
-		PrintWriter out = response.getWriter();
-		out.print("<html><body><h2>hello from servlet</h2></body></html>");
 		
-		String paramName = "param";
-		String paramValue = request.getParameter(paramName);
-		
-		if (paramValue != null && paramValue.equals("status")) {
-			out.print("<html><body><h3>status report request</h3></body></html>");
+		if ("/status".equals(request.getServletPath()))
+		{
+			response.getWriter().write(getStatus());
 		}
-		
-		out.close();       
+		else if ("/alerts".equals(request.getServletPath()))
+		{
+			response.getWriter().write(getAlerts());
+		}			
 		
 	}
+
+	public static String getStatus() {
+
+		return "OK";
+	}
+
+	public static String getAlerts() {
+
+		return "alerts: 1";
+	}
+
 
 }

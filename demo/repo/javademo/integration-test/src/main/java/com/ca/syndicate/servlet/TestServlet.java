@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -87,21 +88,32 @@ public class TestServlet extends HttpServlet {
 			throw new Exception("Failed to connect to app: " + e.getMessage());
 		}
 		
-		if (httpRc == 200)
+		try
 		{
-			// Read body response
-			String httpResponse = readInputStream(httpConnection.getInputStream());
-			System.out.format("Ran tests.  Response: <%s>\n", httpResponse);
-			
-			// Pass back the same content type and app response in our response
-			response.setContentType(httpConnection.getContentType());
-			response.getWriter().write(httpResponse);
+			if (httpRc == 200)
+			{
+				// Read body response
+				String httpResponse = readInputStream(httpConnection.getInputStream());
+				System.out.format("Ran tests.  Response: <%s>\n", httpResponse);
+				
+				// Pass back the same content type and app response in our response
+				response.setContentType(httpConnection.getContentType());
+				response.getWriter().write(httpResponse);
+			}
+			else
+			{
+				String errorResponse = readInputStream(httpConnection.getErrorStream());
+				System.out.format("App Test request failed; HTTP error code <%d> response <%s>\n", httpRc, errorResponse);
+				throw new Exception("App Test HTTP Error code <" + httpRc + "> Response <" + errorResponse + ">");
+			}
 		}
-		else
+		catch (Exception e)
 		{
-			String errorResponse = readInputStream(httpConnection.getErrorStream());
-			System.out.format("App Test request failed; HTTP error code <%d> response <%s>\n", httpRc, errorResponse);
-			throw new Exception("App Test HTTP Error code <" + httpRc + "> Response <" + errorResponse + ">");
+			throw e;
+		}
+		finally
+		{
+			closeHttpURLConnection(httpConnection);
 		}
 	}
 	
@@ -122,4 +134,54 @@ public class TestServlet extends HttpServlet {
 			return buffer.toString();
 		}
 	}
+
+	/**
+	 * Helper method to properly close an HttpURLConnection object
+	 * @param connection
+	 */
+	private void closeHttpURLConnection(HttpURLConnection connection)
+	{
+		if (connection == null)
+		{
+			return;
+		}
+		
+		try
+		{
+			InputStream stream = connection.getInputStream();
+			if (stream != null)
+			{
+				stream.close();
+			}
+		}
+		catch (IOException e)
+		{
+		}
+		
+		try
+		{
+			OutputStream stream = connection.getOutputStream();
+			if (stream != null)
+			{
+				stream.close();
+			}
+		}
+		catch (IOException e)
+		{
+		}
+		
+		try
+		{
+			InputStream stream = connection.getErrorStream();
+			if (stream != null)
+			{
+				stream.close();
+			}
+		}
+		catch (IOException e)
+		{
+		}
+		
+		connection.disconnect();		
+	}	
 }
