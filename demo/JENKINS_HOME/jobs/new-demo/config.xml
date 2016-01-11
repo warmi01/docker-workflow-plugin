@@ -33,5 +33,10 @@
     </scm>
     <scriptPath>demo/repo/new-demo.groovy</scriptPath>
   </definition>
-  <triggers/>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec>H/5 * * * *</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
 </flow-definition>
