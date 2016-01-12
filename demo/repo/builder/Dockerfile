@@ -11,4 +11,4 @@ RUN go get github.com/openshift/source-to-image
 ENV PATH=$PATH:${GOPATH}/src/github.com/openshift/source-to-image/_output/local/bin/linux/amd64/
 RUN cd ${GOPATH}/src/github.com/openshift/source-to-image; hack/build-go.sh
 
-CMD ["echo maven builder running"]
+CMD echo "maven builder running"
