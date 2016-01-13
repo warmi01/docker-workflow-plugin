@@ -5,11 +5,7 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import junit.framework.Assert;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.ca.syndicate.example.DeviceSensor;
 
 
 /**
@@ -56,6 +52,14 @@ public class UnitTest
       SimpleServlet example = new SimpleServlet();
 
       Assert.assertEquals(example.getStatus(), "OK");
+
+    }
+
+    public void testDeviceSensor() {
+
+      DeviceSensor example = new DeviceSensor();
+
+      Assert.assertEquals(example.scan("d1", "floor1"), "d1 at floor1 is running. ");
 
     }
 

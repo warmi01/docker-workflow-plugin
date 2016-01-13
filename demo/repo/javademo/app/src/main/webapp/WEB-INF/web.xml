@@ -4,25 +4,27 @@
 	
     <servlet>
         <servlet-name>test</servlet-name>
-        <servlet-class>com.ca.syndicate.servlet.TestServlet</servlet-class>
+        <servlet-class>com.ca.syndicate.servlet.SimpleServlet</servlet-class>
     </servlet>
-    
-    <!--
-    <servlet>
-        <servlet-name>status</servlet-name>
-        <servlet-class>com.ca.syndicate.servlet.StatusServlet</servlet-class>
-    </servlet>
-    -->
     
     <servlet-mapping>
         <servlet-name>test</servlet-name>
         <url-pattern>/test</url-pattern>
     </servlet-mapping>
-    
-    <!--
+
+    <!-- Use the SimpleServlet to check the servlet path for status -->    
     <servlet-mapping>
-        <servlet-name>status</servlet-name>
+        <servlet-name>test</servlet-name>
         <url-pattern>/status</url-pattern>
     </servlet-mapping>
-    -->
+    
+    <servlet-mapping>
+        <servlet-name>test</servlet-name>
+        <url-pattern>/alerts</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>test</servlet-name>
+        <url-pattern>/report</url-pattern>
+    </servlet-mapping>
 </web-app>

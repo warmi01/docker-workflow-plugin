@@ -1,7 +1,6 @@
 package com.ca.syndicate.servlet;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -9,10 +8,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.ca.syndicate.example.DeviceSensor;
+
 /**
  * Servlet implementation class TestServlet
  */
-@WebServlet("/TestServlet")
+@WebServlet("/SimpleServlet")
 public class SimpleServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
@@ -46,16 +47,30 @@ public class SimpleServlet extends HttpServlet {
 	 * @throws IOException
 	 */
 	public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		response.setContentType("text/html");
-		
-		if ("/status".equals(request.getServletPath()))
+		try
 		{
-			response.getWriter().write(getStatus());
+			response.setContentType("text/html");
+			
+			if ("/status".equals(request.getServletPath()))
+			{
+				response.getWriter().write(getStatus());
+			}
+			else if ("/alerts".equals(request.getServletPath()))
+			{
+				response.getWriter().write(getAlerts());
+			}	
+			else if ("/report".equals(request.getServletPath()))
+			{
+				response.getWriter().write(runReport());
+			}
+
+			response.setStatus(200);
 		}
-		else if ("/alerts".equals(request.getServletPath()))
+		catch (Exception e)
 		{
-			response.getWriter().write(getAlerts());
-		}			
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		}
+		    
 		
 	}
 
@@ -65,9 +80,11 @@ public class SimpleServlet extends HttpServlet {
 	}
 
 	public static String getAlerts() {
-
 		return "alerts: 1";
 	}
 
+	private String runReport() {
+		return DeviceSensor.scan("d1", "floor1");
+	}
 
 }
