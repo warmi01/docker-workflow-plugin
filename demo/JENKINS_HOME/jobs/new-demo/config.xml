@@ -7,9 +7,10 @@
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
-          <name>APP_VERSION</name>
-          <description></description>
-          <defaultValue>1.0</defaultValue>
+          <name>SOURCE_GIT_URL</name>
+          <description>Git URL to get source from.
+Should match the one defined in the Workflow Git URL</description>
+          <defaultValue>https://github.com/warmi01/docker-workflow-plugin.git</defaultValue>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
