@@ -3,3 +3,4 @@ docker-commons:1.0
 authentication-tokens:1.1
 credentials:1.22
 xvnc:1.22
+script-security:1.15
