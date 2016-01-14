@@ -71,7 +71,7 @@ node {
     {
         testimage = docker.build('demotest:ci','demo/repo/javademo/integration-test')
     },
-    failFast: true
+    failFast: false
     
     echo '***** Docker builds for images successful'
     
@@ -105,7 +105,7 @@ node {
         }
         else
         {
-            error 'Contract test failed...Aborting build.'
+            error 'Integration test stage failed'
         }
     }
     catch (all)
