@@ -51,6 +51,10 @@ public class SimpleServlet extends HttpServlet {
 		{
 			response.setContentType("text/html");
 			
+			if ("/test".equals(request.getServletPath()))
+			{
+				response.getWriter().write(getTestResult());
+			}
 			if ("/status".equals(request.getServletPath()))
 			{
 				response.getWriter().write(getStatus());
@@ -72,6 +76,11 @@ public class SimpleServlet extends HttpServlet {
 		}
 		    
 		
+	}
+
+    public static String getTestResult() {
+
+		return "{ state: 'ok',  pass: true, passed: 1, failed: 0 }";
 	}
 
 	public static String getStatus() {

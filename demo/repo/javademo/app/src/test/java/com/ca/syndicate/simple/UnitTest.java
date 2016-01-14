@@ -37,7 +37,7 @@ public class UnitTest
      */
     public void testApp()
     {
-        assertTrue( true );
+        Assert.assertEquals(SimpleServlet.getTestResult(), "{ state: 'ok',  pass: true, passed: 1, failed: 0 }");
     }
 
    
