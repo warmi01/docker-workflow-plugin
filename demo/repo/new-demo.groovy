@@ -57,4 +57,14 @@ node {
         error 'Build or unit test failed'
     }
 
+    // Build the Docker images for the app and integration test
+    parallel "Building Docker app image":
+    {
+        appimage = docker.build('demoapp:1.0','demo/repo/javademo/app')
+    },
+    "Building Docker integration test image":
+    {
+        testimage = docker.build('demotest:1.0','demo/repo/javademo/integration-test')
+    },
+    failFast: true
 }
