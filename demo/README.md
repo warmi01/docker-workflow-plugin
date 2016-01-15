@@ -19,17 +19,18 @@ docker run -d -v /var/run/docker.sock:/var/run/docker.sock -p 8080:8080 -p 8081:
 
 **_(January 2016)_**
 
-Jenkins master container will mount a volume on the Docker host that will contain all JENKINS_HOME data.
+Jenkins master container will mount /var/jenkins_home on the Docker host's /var/jenkins_home directory
+that will contain all JENKINS_HOME data.
 This is a step towards persisting container data, however the main goal here is to allow the build container
-to mount a volume to the workspace directory where source will be built from.  The command line will pass
-environment variables into the container that will be used in the workflow script.
+to mount a volume to the workspace directory where source will be built from.
 ```
-JENKINS_CONTAINER_VOLUME=<shared jenkins home directory>; docker run -d -v /var/run/docker.sock:/var/run/docker.sock -p 8080:8080 -p 8081:8081 -p 8022:22 --add-host=docker.example.com:127.0.0.1 -ti --privileged -e JENKINS_CONTAINER_VOLUME=$JENKINS_CONTAINER_VOLUME -e MAVEN_CACHE_VOLUME=<shared maven cache directory> -v $JENKINS_CONTAINER_VOLUME:/var/jenkins_home  jenkinsci/docker-workflow-demo:1.0
+docker run -d -e MAVEN_CACHE_VOLUME=<shared maven cache directory> -v /var/run/docker.sock:/var/run/docker.sock -p 8080:8080 -p 8081:8081 -p 8022:22 --add-host=docker.example.com:127.0.0.1 -ti --privileged -v /var/jenkins_home:/var/jenkins_home jenkinsci/docker-workflow-demo:1.0
 ```
 NOTE:
 
-Substitute `<shared jenkins home directory>` with the directory path where JENKINS_HOME will reside on the Docker host.
 Substitute `<shared maven cache directory>` with the directory path where the maven repository cache will reside on the Docker host.
+*-e MAVEN_CACHE_VOLUME* will set this environment variable value inside the Jenkins container.  The workflow script
+will use the value to mount the volume in the build container.
 
 #### Accessing Jenkins web console
 To access the Jenkins web console from outside the Docker environment, add the following line to your SSH config for the Docker host.
