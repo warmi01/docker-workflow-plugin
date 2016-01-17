@@ -22,7 +22,7 @@
       <submoduleCfg class="list"/>
       <extensions/>
     </scm>
-    <scriptPath>demo/repo/new-demo.groovy</scriptPath>
+    <scriptPath>Jenskinsfile</scriptPath>
   </definition>
   <triggers>
     <hudson.triggers.SCMTrigger>
