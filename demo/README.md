@@ -13,7 +13,7 @@ NOTE: the original command string below has been modifed to include '-v /var/run
 
 **_(December 2015)_**
 ```
-docker run -d -v /var/run/docker.sock:/var/run/docker.sock -p 8080:8080 -p 8081:8081 -p 8022:22 --add-host=docker.example.com:127.0.0.1 -ti --privileged jenkinsci/docker-workflow-demo:1.0
+docker run -d -v /var/run/docker.sock:/var/run/docker.sock -p 8080:8080 -p 8081:8081 -p 8022:22 --add-host=docker.example.com:127.0.0.1 -ti --privileged jenkinsci/docker-workflow-demo:1.2
 
 ```
 
