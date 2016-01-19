@@ -65,7 +65,7 @@ node {
         echo '***** Preparing for integration testing...Wait for app and test containers to start up'
         retry(10)
         {
-            sleep 3
+            sleep 3L
             sh 'docker exec -t demoapp_ci$BUILD_ID curl --write-out "\n" localhost:8080/demoapp/status'
             sh 'docker exec -t demotest_ci$BUILD_ID curl --write-out "\n" localhost:8080/demotest/status'
         }
