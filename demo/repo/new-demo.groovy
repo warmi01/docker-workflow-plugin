@@ -1,7 +1,7 @@
 node {
     
     // Pull down the git repo with the source
-    git url: SOURCE_GIT_URL
+    checkout scm
     
     // When specified create the docker run -v parameter to mount maven's 
     // repository cache from the Docker host.
