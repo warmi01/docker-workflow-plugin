@@ -1,5 +1,10 @@
 node {
     
+    if (env.JENKINS_CONTAINER_NAME == null)
+    {
+        error "JENKINS_CONTAINER_NAME environment variable needs to be set in docker run command with -e to specify container name used in --name."
+    }
+
     // Pull down the git repo with the source
     checkout scm
     
@@ -10,24 +15,30 @@ node {
     {
         mavenCacheVolumeRunParameter = '-v "' + env.MAVEN_CACHE_VOLUME + '":/root/.m2'
     }
-
+    
     def buildContainerId = 'syndicatebuild' + env.BUILD_ID
+    def workspacePath = pwd()
     
     echo '***** Start container to run build and unit tests'
     def maven
     maven = docker.image('maven:3.3-jdk-7')
     try
-    {
+    {    
         // Start the Maven build container and execute the build.
         // NOTES:
-        // The inside() method automatically mounts the Jenkins job workspace 
-        // on the Docker host into the container.  The build will run from this
-        // directory and generate the artifacts here.
+        // This mounts /var/jenkins_home from the Jenkins container (using --volumes-from)
+        // and sets the current work directory (-w) to the workspace directory.
         // This mounts the maven repository cache directory that's on the Docker
         // host to store maven dependencies for future build container instances.
-        maven.inside('--name ' + buildContainerId + ' ' + mavenCacheVolumeRunParameter)
+        maven.withRun('--name ' + buildContainerId +
+                      ' --volumes-from=' + env.JENKINS_CONTAINER_NAME +
+                      ' -w ' + workspacePath +
+                      ' ' + mavenCacheVolumeRunParameter +
+                      ' -t --entrypoint=cat')
         {
-            sh 'cd demo/repo/javademo && mvn clean package'
+            // Run build from the mounted volume relative to the
+            // job's workspace directory.
+            sh 'docker exec -t ' + buildContainerId + ' bash -c "cd demo/repo/javademo && mvn clean package"'
         }
 
         echo '***** Build and unit tests were successful'

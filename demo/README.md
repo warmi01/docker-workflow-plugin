@@ -19,14 +19,18 @@ docker run -d -v /var/run/docker.sock:/var/run/docker.sock -p 8080:8080 -p 8081:
 
 **_(January 2016)_**
 
-Jenkins master container will mount /var/jenkins_home on the Docker host's /var/jenkins_home directory
-that will contain all JENKINS_HOME data.
-This is a step towards persisting container data, however the main goal here is to allow the build container
-to mount a volume to the workspace directory where source will be built from.
+The Jenkins master container automatically exposes /var/jenkins_home (via a base image layer) for other containers
+to mount against (using --volumes-from).  This allows the Jenkins container to act as a data container
+for $JENKINS_HOME.  The build container will use this volume to access the Jenkins job's workspace directory where
+source will be built from.  This relies on Docker to maintain the volume for the life of the Jenkins container.
 ```
-docker run -d -e MAVEN_CACHE_VOLUME=<shared maven cache directory> -v /var/run/docker.sock:/var/run/docker.sock -p 8080:8080 -p 8081:8081 -p 8022:22 --add-host=docker.example.com:127.0.0.1 -ti --privileged -v /var/jenkins_home:/var/jenkins_home jenkinsci/docker-workflow-demo:1.0
+JENKINS_CONTAINER_NAME=<jenkins container name>; docker run -d --name $JENKINS_CONTAINER_NAME -e JENKINS_CONTAINER_NAME=$JENKINS_CONTAINER_NAME -e MAVEN_CACHE_VOLUME=<shared maven cache directory> -v /var/run/docker.sock:/var/run/docker.sock -p 8080:8080 -p 8081:8081 -p 8022:22 --add-host=docker.example.com:127.0.0.1 -ti --privileged jenkinsci/docker-workflow-demo:1.2
 ```
 NOTE:
+Substitute `<jenkins container name>` for the name of the Jenkins container that you want to use.  Try to make it unique when using a shared environment.
+*-e JENKINS_CONTAINER_NAME* will set this environment variable value inside the Jenkins container.  The workflow script
+will use the value in the --volumes-from= parameter when launching a build container.
+
 
 Substitute `<shared maven cache directory>` with the directory path where the maven repository cache will reside on the Docker host.
 *-e MAVEN_CACHE_VOLUME* will set this environment variable value inside the Jenkins container.  The workflow script
