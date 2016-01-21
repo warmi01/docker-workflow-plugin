@@ -8,14 +8,6 @@ node {
     // Pull down the git repo with the source
     checkout scm
     
-    // When specified create the docker run -v parameter to mount maven's 
-    // repository cache from the Docker host.
-    def mavenCacheVolumeRunParameter = ''
-    if (env.MAVEN_CACHE_VOLUME != null)
-    {
-        mavenCacheVolumeRunParameter = '-v "' + env.MAVEN_CACHE_VOLUME + '":/root/.m2'
-    }
-    
     def buildContainerId = 'syndicatebuild' + env.BUILD_ID
     def workspacePath = pwd()
     
@@ -28,14 +20,16 @@ node {
         // NOTES:
         // This mounts /var/jenkins_home from the Jenkins container (using --volumes-from)
         // and sets the current work directory (-w) to the workspace directory.
-        // This mounts the maven repository cache directory that's on the Docker
-        // host to store maven dependencies for future build container instances.
         maven.withRun('--name ' + buildContainerId +
                       ' --volumes-from=' + env.JENKINS_CONTAINER_NAME +
                       ' -w ' + workspacePath +
-                      ' ' + mavenCacheVolumeRunParameter +
                       ' -t --entrypoint=cat')
         {
+            // Store the maven cache repository under the jenkins_home directory.
+            // Create the maven user settings to specify the repository location. 
+            sh 'docker exec -t ' + buildContainerId + ' bash -c "mkdir -p $HOME/.m2"'
+            sh 'docker exec -t ' + buildContainerId + ' bash -c "echo \'<settings><localRepository>' + env.JENKINS_HOME + '/.m2/repository</localRepository></settings>\' > $HOME/.m2/settings.xml"'
+            
             // Run build from the mounted volume relative to the
             // job's workspace directory.
             sh 'docker exec -t ' + buildContainerId + ' bash -c "cd demo/repo/javademo && mvn clean package"'
