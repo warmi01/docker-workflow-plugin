@@ -16,6 +16,9 @@ node {
     
     // Start Docker app/test containers for integration testing
     runIntegrationTests(images)
+    
+    // Publish the Docker images to a Docker registry
+    publishDockerImages(images, buildVersion)
 }
 
 def prereqCheck()
@@ -153,4 +156,36 @@ def runIntegrationTests(images)
         },
         failFast: false
     }    
+}
+
+// Publish Docker images to a registry only when build parameter is set
+def publishDockerImages(images, version)
+{
+    def appimage = images[0]
+    def testimage = images[1]
+    def registry
+
+    try
+    {
+        registry = CA_DOCKER_REGISTRY
+    }
+    catch (all)
+    {
+        echo 'CA_DOCKER_REGISTRY job build parameter not defined.  Only needed if you want to publish images to a specific Docker registry.'
+    }
+    
+    if (registry != null &&
+        registry != "")
+    {
+        echo '***** Publishing Docker images to registry: ' + registry
+        docker.withRegistry(registry, 'docker-registry-login')
+        {
+            appimage.push(version)
+            testimage.push(version)
+        }
+    }
+    else
+    {
+        echo '***** Docker registry variable is not set'
+    }
 }
