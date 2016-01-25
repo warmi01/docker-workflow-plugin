@@ -1,11 +1,22 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<flow-definition plugin="workflow-job@1.8">
+<flow-definition plugin="workflow-job@1.13">
   <actions/>
   <description></description>
   <keepDependencies>false</keepDependencies>
-  <properties/>
-  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@1.8">
-    <scm class="hudson.plugins.git.GitSCM" plugin="git@2.3.5">
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>CA_DOCKER_REGISTRY</name>
+          <description>(Optional) Specifies a Docker registry where to publish Docker images.  The default assumes you&apos;re running ose3master1.slogvpc3.
+To disable, set to empty string or delete the parameter from the definition.</description>
+          <defaultValue>http://ose3vdr1.services.slogvpc3.caplatformdev.com:5000</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@1.13">
+    <scm class="hudson.plugins.git.GitSCM" plugin="git@2.4.1">
       <configVersion>2</configVersion>
       <userRemoteConfigs>
         <hudson.plugins.git.UserRemoteConfig>
@@ -25,7 +36,7 @@
   </definition>
   <triggers>
     <hudson.triggers.SCMTrigger>
-      <spec>H/2 * * * *</spec>
+      <spec>* * * * *</spec>
       <ignorePostCommitHooks>false</ignorePostCommitHooks>
     </hudson.triggers.SCMTrigger>
   </triggers>
