@@ -1,3 +1,5 @@
+def buildVersion = '1.0.0.' + env.BUILD_ID
+
 node {
     
     prereqCheck()
@@ -10,7 +12,7 @@ node {
     
     // Build the Docker images for the app and integration test
     // from the artifacts built in the workspace
-    def images = buildDockerImages()
+    def images = buildDockerImages(buildVersion)
     
     // Start Docker app/test containers for integration testing
     runIntegrationTests(images)
@@ -62,18 +64,18 @@ def buildWithMavenContainer(projectDirectory)
     }    
 }
 
-def buildDockerImages()
+def buildDockerImages(version)
 {
     def appimage
     def testimage
     
     parallel "Building Docker app image":
     {
-        appimage = docker.build('demoapp:ci','demo/repo/javademo/app')
+        appimage = docker.build('demoapp:' + version,'demo/repo/javademo/app')
     },
     "Building Docker integration test image":
     {
-        testimage = docker.build('demotest:ci','demo/repo/javademo/integration-test')
+        testimage = docker.build('demotest:' + version,'demo/repo/javademo/integration-test')
     },
     failFast: false
     
