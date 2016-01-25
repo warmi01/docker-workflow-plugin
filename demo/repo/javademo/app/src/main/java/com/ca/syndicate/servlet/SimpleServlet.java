@@ -80,6 +80,8 @@ public class SimpleServlet extends HttpServlet {
 
     public static String getTestResult() {
 
+	System.out.println("Test result executed");
+	
         //pass case
 		return "{ state: 'ok',  pass: true, passed: 1, failed: 0 }";
 
