@@ -83,10 +83,10 @@ public class SimpleServlet extends HttpServlet {
 	System.out.println("Test result executed");
 	
         //pass case
-		return "{ state: 'ok',  pass: true, passed: 1, failed: 0 }";
+		//return "{ state: 'ok',  pass: true, passed: 1, failed: 0 }";
 
 		//failed case
-		//return "{ state: 'ok',  pass: false, passed: 0, failed: 1 }";
+		return "{ state: 'ok',  pass: false, passed: 0, failed: 1 }";
 	}
 
 	public static String getStatus() {
