@@ -37,10 +37,10 @@ public class UnitTest
      */
     public void testApp()
     {
-        //Assert.assertEquals(SimpleServlet.getTestResult(), "{ state: 'ok',  pass: true, passed: 1, failed: 0 }");
+        Assert.assertEquals(SimpleServlet.getTestResult(), "{ state: 'ok',  pass: true, passed: 1, failed: 0 }");
         
         // To Allow integration test case failure
-        Assert.assertEquals(SimpleServlet.getTestResult(), "{ state: 'ok',  pass: false, passed: 0, failed: 1 }");
+        //Assert.assertEquals(SimpleServlet.getTestResult(), "{ state: 'ok',  pass: false, passed: 0, failed: 1 }");
     }
 
    
