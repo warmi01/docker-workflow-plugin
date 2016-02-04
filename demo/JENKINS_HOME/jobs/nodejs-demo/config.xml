@@ -22,7 +22,7 @@
       <submoduleCfg class="list"/>
       <extensions/>
     </scm>
-    <scriptPath>Jenkinsfile</scriptPath>
+    <scriptPath>src/Jenkinsfile</scriptPath>
   </definition>
   <triggers>
     <hudson.triggers.SCMTrigger>
