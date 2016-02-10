@@ -4,3 +4,4 @@ authentication-tokens:1.2
 credentials:1.24
 xvnc:1.23
 script-security:1.15
+icon-shim:1.0.3
