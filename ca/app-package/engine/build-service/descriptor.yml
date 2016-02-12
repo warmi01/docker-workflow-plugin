@@ -1,0 +1,17 @@
+---
+# Engines have several properties (see
+# http://cawiki.ca.com/display/Platform/Platform+Programming+Model):
+
+
+name: build-service
+version: 1.0.0.0
+display_name: "Build Service"
+packaging: docker
+docker_image: "platform/syndicate/build-service"
+docker_vdr: True
+docker_image_tag: 1.0.0.0
+docker_ports:
+    - port: 3000
+tenant_routes:
+    - path: /:tenant/ci/build-service
+      servicePath: /:postFix

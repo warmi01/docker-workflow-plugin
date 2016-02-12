@@ -1,0 +1,8 @@
+---
+# tbd: any metadata required for DSS
+
+name: jenkins
+display_name: "JENKINS_HOME data"
+type: nfs
+namespace: jenkins  # the tablespace or whatever is logically the "named slice" for the app to use
+
