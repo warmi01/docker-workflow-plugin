@@ -1,0 +1,4 @@
+---
+# base quick self-test
+name: smoketest
+display_name: "Smoke test application deployment"
