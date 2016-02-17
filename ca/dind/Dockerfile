@@ -4,6 +4,7 @@ FROM docker:1.10-dind
 RUN apk add --no-cache nfs-utils
 
 # Call custom entrypoint script
+USER root
 COPY ca-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/ca-entrypoint.sh
 
