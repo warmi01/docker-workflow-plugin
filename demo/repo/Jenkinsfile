@@ -18,10 +18,10 @@ node {
             def images = buildDockerImages('demo/repo/javademo', imagetag)
             
             // Start Docker app/test containers for integration testing
-            runIntegrationTests(images, imagetag)        
+            runIntegrationTests(images[0], images[1], imagetag)        
     
             // Publish the Docker images to a Docker registry
-            publishDockerImages(images, imagetag)
+            publishDockerImages(images[0], images[1], imagetag)
         }
         catch (all)
         {
@@ -71,16 +71,15 @@ def buildWithMavenContainer(projectDirectory, imagetag)
 
 def buildDockerImages(projectDirectory, imagetag)
 {
-    def appimage
-    def testimage
+    def appimage, testimage
     
     parallel "Building Docker app image":
     {
-        appimage = docker.build("demoapp:${imagetag}", "${projectDirectory}/app")
+        appimage = docker.build("java-demo:${imagetag}", "${projectDirectory}/app")
     },
     "Building Docker integration test image":
     {
-        testimage = docker.build("demotest:${imagetag}", "${projectDirectory}/integration-test")
+        testimage = docker.build("java-demo-test:${imagetag}", "${projectDirectory}/integration-test")
     },
     failFast: false
     
@@ -89,17 +88,15 @@ def buildDockerImages(projectDirectory, imagetag)
     return [appimage, testimage]
 }
 
-def runIntegrationTests(images, imagetag)
+def runIntegrationTests(appimage, testimage, imagetag)
 {
-    def appimage = images[0]
-    def testimage = images[1]
-    def appcontainer
-    def testcontainer
+    def appcontainer, testcontainer
+    
     echo '***** Integration test stage...Start Docker containers for integration testing'
     try
     {
-        appcontainer = appimage.run("-d -i -p 8082:8080 --name java-demo-${imagetag}")
-        testcontainer = testimage.run("-d -i -p 8083:8080 --link java-demo-${imagetag}:app --name java-demo-test-${imagetag}")
+        appcontainer = appimage.run("-d -i --name java-demo-${imagetag}")
+        testcontainer = testimage.run("-d -i --link java-demo-${imagetag}:app --name java-demo-test-${imagetag}")
 
         echo '***** Preparing for integration testing...Wait for app and test containers to start up'
         retry(10)
@@ -161,10 +158,8 @@ def runIntegrationTests(images, imagetag)
 }
 
 // Publish Docker images to a registry only when build parameter is set
-def publishDockerImages(images, imagetag)
+def publishDockerImages(appimage, testimage, imagetag)
 {
-    def appimage = images[0]
-    def testimage = images[1]
     def registry
 
     try
