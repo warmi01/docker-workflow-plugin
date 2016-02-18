@@ -72,6 +72,7 @@ RUN git config --global user.email "demo@jenkins-ci.org" && git config --global 
 # Replace jenkins.sh with a more generic version of it.
 # This uses $JENKINS_HOME instead of a hardcoded /var/jenkins_home.
 COPY jenkins.sh /usr/local/bin/jenkins.sh
+RUN chmod +x /usr/local/bin/jenkins.sh
 
 # Create this file so that the first time Jenkins starts up in a POD it
 # knows to perform a soft link of the NFS mount point created by DSS.
