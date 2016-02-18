@@ -11,16 +11,20 @@ node {
             def imagetag = "${version.trim()}.${env.BUILD_ID}"
     
             // Run the build and unit tests inside a maven container
+            stage 'build java artifacts'
             buildWithMavenContainer('demo/repo/javademo', imagetag)
             
             // Build the Docker images for the app and integration test
             // from the artifacts built in the workspace
+            stage 'build docker images'
             def images = buildDockerImages('demo/repo/javademo', imagetag)
             
             // Start Docker app/test containers for integration testing
+            stage 'run integration tests'
             runIntegrationTests(images[0], images[1], imagetag)        
     
             // Publish the Docker images to a Docker registry
+            stage 'push docker images'
             publishDockerImages(images[0], images[1], imagetag)
         }
         catch (all)
@@ -155,6 +159,16 @@ def runIntegrationTests(appimage, testimage, imagetag)
         },
         failFast: false
     }    
+}
+
+def pushImage(image) {
+
+   try {
+      // temporariy use fully qualified VDR name; shorter ose3vdr1 should be used once devops docker changes made
+      docker.script.sh "docker tag ${image} ose3vdr1.services.slogvpc4.caplatformdev.com:5000/platform/${image}"
+      docker.script.sh "docker push ose3vdr1.services.slogvpc4.caplatformdev.com:5000/platform/${image}"
+   }
+   catch (all) {error "Failed to tag/push to VDR image ${image}"}
 }
 
 // Publish Docker images to a registry only when build parameter is set
