@@ -5,9 +5,9 @@
 
 name: jenkins
 version: 1.0.0.0
-display_name: "Jenkins Docker"
+display_name: "Jenkins"
 packaging: docker
-docker_image: "platform/syndicate/jenkins"
+docker_image: "platform/buildservice-jenkins"
 docker_vdr: True
 docker_image_tag: 1.0.0.0
 docker_ports:

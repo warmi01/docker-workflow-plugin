@@ -8,11 +8,11 @@
 # APP PROPERTIES (all required unless otherwise specified):
  
 # URL friendly code name for the app
-name: jenkins
+name: buildservice
  
 # Human-readable app name.
 # TODO: multi-language support
-display_name: "Jenkins CI"
+display_name: "Build Service CI"
 
 # Application-level version number. Must be major.minor.etc style,
 # with as many components as you like, with the usual sort order for

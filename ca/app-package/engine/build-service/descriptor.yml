@@ -3,15 +3,19 @@
 # http://cawiki.ca.com/display/Platform/Platform+Programming+Model):
 
 
-name: build-service
+name: buildservice
 version: 1.0.0.0
 display_name: "Build Service"
 packaging: docker
-docker_image: "platform/syndicate/build-service"
+docker_image: "platform/buildservice-buildservice"
 docker_vdr: True
 docker_image_tag: 1.0.0.0
 docker_ports:
     - port: 3000
+env_vars:
+    # Service registry path to Jenkins engine
+    - name: JENKINS_SR_PATH
+      value: /default/ci/jenkins
 tenant_routes:
-    - path: /:tenant/ci/build-service
+    - path: /:tenant/ci/buildservice
       servicePath: /:postFix
