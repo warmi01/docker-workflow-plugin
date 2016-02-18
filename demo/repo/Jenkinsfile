@@ -98,8 +98,8 @@ def runIntegrationTests(images, imagetag)
         retry(10)
         {
             sleep 3L
-            sh "docker exec -t java-demo-${imagetag} curl --write-out "\n" localhost:8080/demoapp/status"
-            sh "docker exec -t java-demo-test-${imagetag} curl --write-out "\n" localhost:8080/demotest/status"
+            sh "docker exec -t java-demo-${imagetag} curl --write-out '\n' localhost:8080/demoapp/status"
+            sh "docker exec -t java-demo-test-${imagetag} curl --write-out '\n' localhost:8080/demotest/status"
         }
 
         echo '***** Execute test on integration test container'
