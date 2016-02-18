@@ -1,5 +1,3 @@
-def buildVersion = '1.0.0.' + env.BUILD_ID
-
 node {
     
     // Pull down the git repo with the source
@@ -7,23 +5,26 @@ node {
     
     docker.withServer(env.CI_DOCKER_HOST)
     {
+        def version = readFile 'demo/repo/version.txt' 
+        def imagetag = "${version.trim()}.${env.BUILD_ID}"
+
         // Run the build and unit tests inside a maven container
-        buildWithMavenContainer('demo/repo/javademo')
+        buildWithMavenContainer('demo/repo/javademo', imagetag)
         
         // Build the Docker images for the app and integration test
         // from the artifacts built in the workspace
-        def images = buildDockerImages('demo/repo/javademo', buildVersion)
+        def images = buildDockerImages('demo/repo/javademo', imagetag)
         
         // Start Docker app/test containers for integration testing
-        runIntegrationTests(images)        
+        runIntegrationTests(images, imagetag)        
 
         // Publish the Docker images to a Docker registry
-        publishDockerImages(images, buildVersion)
+        publishDockerImages(images, imagetag)
     }
 }
 
 // Run maven build that will compile, run unit tests, and create artifact binaries
-def buildWithMavenContainer(projectDirectory)
+def buildWithMavenContainer(projectDirectory, imagetag)
 {
     def buildContainerId = 'syndicatebuild' + env.BUILD_ID
     def buildPath = pwd() + '/' + projectDirectory
@@ -61,18 +62,18 @@ def buildWithMavenContainer(projectDirectory)
     }    
 }
 
-def buildDockerImages(projectDirectory, version)
+def buildDockerImages(projectDirectory, imagetag)
 {
     def appimage
     def testimage
     
     parallel "Building Docker app image":
     {
-        appimage = docker.build('demoapp:' + version, projectDirectory + '/app')
+        appimage = docker.build("demoapp:${imagetag}", "${projectDirectory}/app")
     },
     "Building Docker integration test image":
     {
-        testimage = docker.build('demotest:' + version, projectDirectory + '/integration-test')
+        testimage = docker.build("demotest:${imagetag}", "${projectDirectory}/integration-test")
     },
     failFast: false
     
@@ -81,7 +82,7 @@ def buildDockerImages(projectDirectory, version)
     return [appimage, testimage]
 }
 
-def runIntegrationTests(images)
+def runIntegrationTests(images, imagetag)
 {
     def appimage = images[0]
     def testimage = images[1]
@@ -90,22 +91,22 @@ def runIntegrationTests(images)
     echo '***** Integration test stage...Start Docker containers for integration testing'
     try
     {
-        appcontainer = appimage.run('-d -i -p 8082:8080 --name demoapp_ci$BUILD_ID')
-        testcontainer = testimage.run('-d -i -p 8083:8080 --link demoapp_ci$BUILD_ID:app --name demotest_ci$BUILD_ID')
+        appcontainer = appimage.run("-d -i -p 8082:8080 --name java-demo-${imagetag}")
+        testcontainer = testimage.run("-d -i -p 8083:8080 --link java-demo-${imagetag}:app --name java-demo-test-${imagetag}")
 
         echo '***** Preparing for integration testing...Wait for app and test containers to start up'
         retry(10)
         {
             sleep 3L
-            sh 'docker exec -t demoapp_ci$BUILD_ID curl --write-out "\n" localhost:8080/demoapp/status'
-            sh 'docker exec -t demotest_ci$BUILD_ID curl --write-out "\n" localhost:8080/demotest/status'
+            sh "docker exec -t java-demo-${imagetag} curl --write-out "\n" localhost:8080/demoapp/status"
+            sh "docker exec -t java-demo-test-${imagetag} curl --write-out "\n" localhost:8080/demotest/status"
         }
 
         echo '***** Execute test on integration test container'
         // This will execute the test from inside the test container.
         // The output will be piped to a file so that it can be read into a
         // variable to process the test output.
-        sh 'docker exec -t demotest_ci$BUILD_ID curl --write-out "\n" localhost:8080/demotest/test > test.txt 2>&1'
+        sh "docker exec -t java-demo-test-${imagetag} curl --write-out '\n' localhost:8080/demotest/test > test.txt 2>&1"
         def testoutput = readFile('test.txt')
         echo testoutput
 
@@ -153,7 +154,7 @@ def runIntegrationTests(images)
 }
 
 // Publish Docker images to a registry only when build parameter is set
-def publishDockerImages(images, version)
+def publishDockerImages(images, imagetag)
 {
     def appimage = images[0]
     def testimage = images[1]
@@ -174,8 +175,8 @@ def publishDockerImages(images, version)
         echo '***** Publishing Docker images to registry: ' + registry
         docker.withRegistry(registry, 'docker-registry-login')
         {
-            appimage.push(version)
-            testimage.push(version)
+            appimage.push(imagetag)
+            testimage.push(imagetag)
         }
     }
     else
