@@ -33,7 +33,7 @@ node {
 // Run maven build that will compile, run unit tests, and create artifact binaries
 def buildWithMavenContainer(projectDirectory, imagetag)
 {
-    def buildContainerId = 'syndicatebuild' + env.BUILD_ID
+    def buildContainerId = 'syndicatebuild-' + imagetag
     def buildPath = pwd() + '/' + projectDirectory
     
     echo '***** Start container to run build and unit tests'
