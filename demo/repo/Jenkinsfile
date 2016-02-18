@@ -5,21 +5,28 @@ node {
     
     docker.withServer(env.CI_DOCKER_HOST)
     {
-        def version = readFile 'demo/repo/version.txt' 
-        def imagetag = "${version.trim()}.${env.BUILD_ID}"
-
-        // Run the build and unit tests inside a maven container
-        buildWithMavenContainer('demo/repo/javademo', imagetag)
-        
-        // Build the Docker images for the app and integration test
-        // from the artifacts built in the workspace
-        def images = buildDockerImages('demo/repo/javademo', imagetag)
-        
-        // Start Docker app/test containers for integration testing
-        runIntegrationTests(images, imagetag)        
-
-        // Publish the Docker images to a Docker registry
-        publishDockerImages(images, imagetag)
+        try
+        {
+            def version = readFile 'demo/repo/version.txt' 
+            def imagetag = "${version.trim()}.${env.BUILD_ID}"
+    
+            // Run the build and unit tests inside a maven container
+            buildWithMavenContainer('demo/repo/javademo', imagetag)
+            
+            // Build the Docker images for the app and integration test
+            // from the artifacts built in the workspace
+            def images = buildDockerImages('demo/repo/javademo', imagetag)
+            
+            // Start Docker app/test containers for integration testing
+            runIntegrationTests(images, imagetag)        
+    
+            // Publish the Docker images to a Docker registry
+            publishDockerImages(images, imagetag)
+        }
+        catch (all)
+        {
+            error 'Pipeline error'
+        }
     }
 }
 
