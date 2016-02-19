@@ -90,7 +90,7 @@ def buildDockerImages(images, projectDirectory, imagetag)
     },
     "Building Docker integration test image":
     {
-        images.app_int = docker.build("java-demo-test:${imagetag}", "${projectDirectory}/integration-test")
+        images.app_int = docker.build("java-demo-int-tests:${imagetag}", "${projectDirectory}/integration-test")
     },
     failFast: false
     
@@ -110,14 +110,14 @@ def runIntegrationTests(containers, images, imagetag)
         {
             sleep 3L
             docker.script.sh "docker exec -t java-demo-${imagetag} curl --write-out '\n' localhost:8080/demoapp/status"
-            docker.script.sh "docker exec -t java-demo-test-${imagetag} curl --write-out '\n' localhost:8080/demotest/status"
+            docker.script.sh "docker exec -t java-demo-int-tests-${imagetag} curl --write-out '\n' localhost:8080/demotest/status"
         }
 
         echo '***** Execute test on integration test container'
         // This will execute the test from inside the test container.
         // The output will be piped to a file so that it can be read into a
         // variable to process the test output.
-        docker.script.sh "docker exec -t java-demo-test-${imagetag} curl --write-out '\n' localhost:8080/demotest/test > test.txt 2>&1"
+        docker.script.sh "docker exec -t java-demo-int-tests-${imagetag} curl --write-out '\n' localhost:8080/demotest/test > test.txt 2>&1"
         def testoutput = docker.script.readFile('test.txt')
         echo testoutput
 
