@@ -101,7 +101,7 @@ def runIntegrationTests(containers, images, imagetag)
     try
     {
         containers.app = images.app.run("-d -i --name ${env.JOB_NAME}-${imagetag}")
-        containers.app_tests = images.app_int.run("-d -i --link ${env.JOB_NAME}-${imagetag}:app --name ${env.JOB_NAME}-tests-${imagetag}")
+        containers.app_tests = images.app_tests.run("-d -i --link ${env.JOB_NAME}-${imagetag}:app --name ${env.JOB_NAME}-tests-${imagetag}")
 
         echo '***** Preparing for integration testing...Wait for app and test containers to start up'
         retry(10)
