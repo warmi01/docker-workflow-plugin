@@ -101,7 +101,7 @@ def runIntegrationTests(containers, images, imagetag)
     try
     {
         containers.app = images.app.run("-d -i --name java-demo-${imagetag}")
-        containers.app_int = images.app_int.run("-d -i --link java-demo-${imagetag}:app --name java-demo-test-${imagetag}")
+        containers.app_int = images.app_int.run("-d -i --link java-demo-${imagetag}:app --name java-demo-int-tests-${imagetag}")
 
         echo '***** Preparing for integration testing...Wait for app and test containers to start up'
         retry(10)
