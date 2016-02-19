@@ -1,5 +1,8 @@
 node {
     
+     def images = ['app': null, 'app_int': null]
+     def containers = ['app': null, 'app_int': null]
+
     // Pull down the git repo with the source
     checkout scm
     
@@ -7,8 +10,8 @@ node {
     {
         try
         {
-            def version = readFile 'demo/repo/version.txt' 
-            def imagetag = "${version.trim()}.${env.BUILD_ID}"
+            def version = docker.script.readFile('demo/repo/version.txt').trim() 
+            def imagetag = "${version}.${env.BUILD_ID}"
     
             // Run the build and unit tests inside a maven container
             stage 'build java artifacts'
@@ -17,20 +20,24 @@ node {
             // Build the Docker images for the app and integration test
             // from the artifacts built in the workspace
             stage 'build docker images'
-            def images = buildDockerImages('demo/repo/javademo', imagetag)
+            buildDockerImages(images, 'demo/repo/javademo', imagetag)
             
             // Start Docker app/test containers for integration testing
             stage 'run integration tests'
-            runIntegrationTests(images[0], images[1], imagetag)        
+            runIntegrationTests(containers, images, imagetag)        
     
             // Publish the Docker images to a Docker registry
             stage 'push docker images'
-            publishDockerImages(images[0], images[1], imagetag)
+            publishDockerImages(images, imagetag)
         }
         catch (all)
         {
             error 'Pipeline error'
         }
+        finally
+        {
+            cleanup(images, containers)
+        }    
     }
 }
 
@@ -41,8 +48,8 @@ def buildWithMavenContainer(projectDirectory, imagetag)
     def buildPath = pwd() + '/' + projectDirectory
     
     echo '***** Start container to run build and unit tests'
-    def maven
-    maven = docker.image('maven:3.3-jdk-7')
+    def maven = docker.image('maven:3.3-jdk-7')
+    
     try
     {    
         // Start the Maven build container
@@ -62,7 +69,7 @@ def buildWithMavenContainer(projectDirectory, imagetag)
             // Execute the Maven build inside the container.
             // The package directive compiles the source, runs the unit test,
             // creates the artifacts.
-            sh 'docker exec -t ' + buildContainerId + ' bash -c "mvn -Dmaven.repo.local=/m2repo clean package"'
+            docker.script.sh 'docker exec -t ' + buildContainerId + ' bash -c "mvn -Dmaven.repo.local=/m2repo clean package"'
         }
 
         echo '***** Build and unit tests were successful'
@@ -73,49 +80,45 @@ def buildWithMavenContainer(projectDirectory, imagetag)
     }    
 }
 
-def buildDockerImages(projectDirectory, imagetag)
+def buildDockerImages(images, projectDirectory, imagetag)
 {
     def appimage, testimage
     
     parallel "Building Docker app image":
     {
-        appimage = docker.build("java-demo:${imagetag}", "${projectDirectory}/app")
+        images.app = docker.build("java-demo:${imagetag}", "${projectDirectory}/app")
     },
     "Building Docker integration test image":
     {
-        testimage = docker.build("java-demo-test:${imagetag}", "${projectDirectory}/integration-test")
+        images.app_int = docker.build("java-demo-test:${imagetag}", "${projectDirectory}/integration-test")
     },
     failFast: false
     
     echo '***** Docker builds for images successful'
-    
-    return [appimage, testimage]
 }
 
-def runIntegrationTests(appimage, testimage, imagetag)
+def runIntegrationTests(containers, images, imagetag)
 {
-    def appcontainer, testcontainer
-    
     echo '***** Integration test stage...Start Docker containers for integration testing'
     try
     {
-        appcontainer = appimage.run("-d -i --name java-demo-${imagetag}")
-        testcontainer = testimage.run("-d -i --link java-demo-${imagetag}:app --name java-demo-test-${imagetag}")
+        containers.app = images.app.run("-d -i --name java-demo-${imagetag}")
+        containers.app_int = images.app_int.run("-d -i --link java-demo-${imagetag}:app --name java-demo-test-${imagetag}")
 
         echo '***** Preparing for integration testing...Wait for app and test containers to start up'
         retry(10)
         {
             sleep 3L
-            sh "docker exec -t java-demo-${imagetag} curl --write-out '\n' localhost:8080/demoapp/status"
-            sh "docker exec -t java-demo-test-${imagetag} curl --write-out '\n' localhost:8080/demotest/status"
+            docker.script.sh "docker exec -t java-demo-${imagetag} curl --write-out '\n' localhost:8080/demoapp/status"
+            docker.script.sh "docker exec -t java-demo-test-${imagetag} curl --write-out '\n' localhost:8080/demotest/status"
         }
 
         echo '***** Execute test on integration test container'
         // This will execute the test from inside the test container.
         // The output will be piped to a file so that it can be read into a
         // variable to process the test output.
-        sh "docker exec -t java-demo-test-${imagetag} curl --write-out '\n' localhost:8080/demotest/test > test.txt 2>&1"
-        def testoutput = readFile('test.txt')
+        docker.script.sh "docker exec -t java-demo-test-${imagetag} curl --write-out '\n' localhost:8080/demotest/test > test.txt 2>&1"
+        def testoutput = docker.script.readFile('test.txt')
         echo testoutput
 
         if (testoutput.contains('pass: true'))
@@ -133,71 +136,42 @@ def runIntegrationTests(appimage, testimage, imagetag)
         // Don't go any futher after cleanup in finally block
         error 'Integration test stage failed'
     }
-    finally
-    {
-        parallel "Stop app container":
-        {
-            // Executes when user aborts from input.
-            // Stops and removes containers
-            try
-            {
-                appcontainer.stop()          
-            }
-            catch (all)
-            {    
-            }
-        },
-        "Stop integration test container":
-        {
-            try
-            {
-                testcontainer.stop()          
-            }
-            catch (all)
-            {
-            }
-        },
-        failFast: false
-    }    
 }
 
-def pushImage(image) {
+def cleanup(images, containers) {
 
-   try {
-      // temporariy use fully qualified VDR name; shorter ose3vdr1 should be used once devops docker changes made
-      docker.script.sh "docker tag ${image} ose3vdr1.services.slogvpc4.caplatformdev.com:5000/platform/${image}"
-      docker.script.sh "docker push ose3vdr1.services.slogvpc4.caplatformdev.com:5000/platform/${image}"
-   }
-   catch (all) {error "Failed to tag/push to VDR image ${image}"}
+     parallel "Stop demo app container":
+     {
+          try {
+               containers.app.stop()
+               docker.script.sh "docker rmi ${images.app.id}"
+          }
+          catch (all) {echo 'Error stopping demo app container'}
+     },
+     "Stop integration tests container":
+     {
+          try {
+               containers.app_int.stop()
+               docker.script.sh "docker rmi ${images.app_int.id}"
+          }
+          catch (all) {echo 'Error stopping integration tests container'}
+     },
+     failFast: false
 }
 
-// Publish Docker images to a registry only when build parameter is set
-def publishDockerImages(appimage, testimage, imagetag)
-{
-    def registry
+def publishDockerImages(images, imagetag) {
 
-    try
-    {
-        registry = CA_DOCKER_REGISTRY
-    }
-    catch (all)
-    {
-        echo 'CA_DOCKER_REGISTRY job build parameter not defined.  Only needed if you want to publish images to a specific Docker registry.'
-    }
-    
-    if (registry != null &&
-        registry != "")
-    {
-        echo '***** Publishing Docker images to registry: ' + registry
-        docker.withRegistry(registry, 'docker-registry-login')
-        {
-            appimage.push(imagetag)
-            testimage.push(imagetag)
-        }
-    }
-    else
-    {
-        echo '***** Docker registry variable is not set'
-    }
+     try {
+          // temporariy use fully qualified VDR name; shorter ose3vdr1 should be used once devops docker changes made
+          docker.withRegistry('http://ose3vdr1.services.slogvpc4.caplatformdev.com:5000', 'docker-registry-login') {
+               
+               images.app.push(imagetag)
+               images.app_int.push(imagetag)
+          }
+     }
+     catch (all) {
+          echo 'Failed to tag/push to VDR image'
+          error 'Failed to tag/push to VDR image'
+     }
 }
 
