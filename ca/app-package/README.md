@@ -1,6 +1,6 @@
 Appformer package for Jenkins CI
 ================================
-This package deploys Jenkins and the Build Service engines.
+This package deploys Jenkins and the Build Service engines as PODs.
 This will create an NFS share that will be mounted inside the PODs.
 
 The steps provided below were based on reading this [wiki link](https://cawiki.ca.com/display/intplatform/HOWTO%3A+Get+Started+With+OSE3#HOWTO:GetStartedWithOSE3-DeployaPlatformApplicationinOSE3).
@@ -8,6 +8,51 @@ The steps provided below were based on reading this [wiki link](https://cawiki.c
 In the steps, substitute the following values:
 - `<ose3project>` - OSE3 Project where Appformer is running.  _(Example: myproject)_
 - `<VPC>` - the VPC where the Platform instance is running on.  _(Example: slogvpc4)_
+
+### Testing in personal Appformer environment
+You'll need to get the devops team to deploy an Appformer environment for you to use in the Openshift environment.
+They'll deploy it to your project.
+
+#### Modify app package engine descriptors for personal testing
+Each engine in the app package is a docker image.  For Platform deployment the
+package expects the images to be in the platform Openshift project.  However,
+to deploy the package in your project, you will need to modify the engine
+descriptors to point to your project.
+
+1. Edit `engine/jenkins/descriptor.yml` to replace this line:
+```
+docker_image: "platform/buildservice-jenkins"
+```
+with the project where Appformer is running in:
+```
+docker_image: "<ose3project>/buildservice-jenkins"
+```
+2. Edit `engine/buildservice/descriptor.yml` to replace this line:
+```
+docker_image: "platform/buildservice-buildservice"
+```
+with the project where Appformer is running in:
+```
+docker_image: "<ose3project>/buildservice-buildservice"
+```
+
+#### Push Docker engine images to VDR
+Following on the previous section, regarding where the images are located, the Docker
+images that the app package refers to needs to be made available in the local
+VDR.
+
+1. Build the Jenkins Docker image and push the image
+```
+cd docker-workflow-plugin/demo
+docker build -t ose3vdr1.services.<VPC>.caplatformdev.com:5000/<ose3project>/buildservice-jenkins:1.0.0.0 -f Dockerfile_release .
+docker push ose3vdr1.services.<VPC>.caplatformdev.com:5000/<ose3project>/buildservice-jenkins:1.0.0.0
+```
+2. Build the Build Service Docker image (from the build-service git repo)
+```
+cd build-service
+docker build -t ose3vdr1.services.<VPC>.caplatformdev.com:5000/<ose3project>/buildservice-buildservice:1.0.0.0 .
+docker push ose3vdr1.services.<VPC>.caplatformdev.com:5000/<ose3project>/buildservice-buildservice:1.0.0.0
+```
 
 #### Create Appformer app
 1. Create appformer jenkins app:
@@ -29,7 +74,6 @@ Example:
 ```
 git clone http://appformer-myproject.app.services.slogvpc4.caplatformdev.com/system/git/jenkins.git
 ```
-
 2. Place root of app package directory structure at the root of the cloned git repo and push changes:
 ```
 git add -A
