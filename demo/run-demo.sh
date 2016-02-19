@@ -28,23 +28,38 @@
 # Install a private registry that can be used by the demo to push images to.
 #
 
-echo '*************** Installing a local Docker Registry Service for the demo ***************'
-echo '***************            Please sit tight for a minute                ***************'
+################### START Commented out since we don't need local registry
 
-REG_SETUP_PATH=/tmp/files/regup
+#echo '*************** Installing a local Docker Registry Service for the demo ***************'
+#echo '***************            Please sit tight for a minute                ***************'
 
-docker run -d --name registry --restart=always registry:0.9.1
-docker run -d -p 443:443 --name wf-registry-proxy -v $REG_SETUP_PATH:/etc/nginx/conf.d/ -v $REG_SETUP_PATH/sec:/var/registry/certs --link registry:registry nginx:1.9.0
+#REG_SETUP_PATH=/tmp/files/regup
 
-echo '***************         Docker Registry Service running now             ***************'
+#docker run -d --name registry --restart=always registry:0.9.1
+#docker run -d -p 443:443 --name wf-registry-proxy -v $REG_SETUP_PATH:/etc/nginx/conf.d/ -v $REG_SETUP_PATH/sec:/var/registry/certs --link registry:registry nginx:1.9.0
+
+#echo '***************         Docker Registry Service running now             ***************'
 
 # In case some tagged images were left over from a previous run using a cache:
-(docker images -q examplecorp/spring-petclinic; docker images -q docker.example.com/examplecorp/spring-petclinic) | xargs docker rmi --no-prune=true --force
+#(docker images -q examplecorp/spring-petclinic; docker images -q docker.example.com/examplecorp/spring-petclinic) | xargs docker rmi --no-prune=true --force
+
+################### END
+
+# quaha01:
+# Appformer package sets an NFS mount point that we can't change.
+# Perform a one-time create of a soft link to the NFS mount point.
+# This will occur for each new container/POD.
+if [ "$DSS_LOCALMOUNTPOINT_JENKINS" ] && [ -e /var/firststart ]
+then
+    rm -f /var/firststart
+    ln -s -f $DSS_LOCALMOUNTPOINT_JENKINS $JENKINS_HOME
+    echo "Created soft link from $JENKINS_HOME to NFS mount point $DSS_LOCALMOUNTPOINT_JENKINS"
+fi
 
 #
 # Remove the base workflow-demo "cd" job
 #
-rm -rf /usr/share/jenkins/ref/jobs/cd /var/jenkins_home/jobs/cd
+rm -rf /usr/share/jenkins/ref/jobs/cd $JENKINS_HOME/jobs/cd
 
 #
 # Now run Jenkins.

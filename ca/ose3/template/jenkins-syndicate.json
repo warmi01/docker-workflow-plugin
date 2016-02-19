@@ -1,0 +1,321 @@
+{
+    "kind": "Template",
+    "apiVersion": "v1",
+    "metadata": {
+        "name": "jenkins-syndicate",
+        "creationTimestamp": null,
+        "annotations": {
+            "description": "Deploys Jenkins master server and Build service each in separate PODs.  Jenkins uses a mounted NFS volume for data persistence."
+        }
+    },
+    "parameters": [
+        {
+            "name": "APPLICATION_NAME",
+            "description": "Used in the various Openshift object names for the Jenkins server.  It's useful for identification purposes.",
+            "value": "jenkins",
+            "required": true
+        },
+        {
+            "name": "APPLICATION_NAME_BUILDSERVICE",
+            "description": "Used in the various Openshift object names for the Build service.  It's useful for identification purposes.",
+            "value": "build-service",
+            "required": true
+        },
+        {
+            "name": "IMAGE_STREAM_NAME",
+            "description": "Image stream name for the Jenkins server.",
+            "value": "jenkins-syndicate",
+            "required": true
+        },
+        {
+            "name": "IMAGE_STREAM_TAG",
+            "description": "Image stream tag name for the Jenkins server.",
+            "value": "latest",
+            "required": true
+        },
+        {
+            "name": "IMAGE_STREAM_NAME_BUILDSERVICE",
+            "description": "Image stream name for the Build Service.",
+            "value": "build-service",
+            "required": true
+        },
+        {
+            "name": "IMAGE_STREAM_TAG_BUILDSERVICE",
+            "description": "Image stream tag name for the Build Service.",
+            "value": "latest",
+            "required": true
+        },
+        {
+            "name": "CI_DOCKER_HOST",
+            "description": "Remote Docker host for CI use",
+            "value": "ose3master1.services.slogvpc4.caplatformdev.com:32375",
+            "required": true
+        },
+        {
+            "name": "NFS_SERVER",
+            "description": "NFS server name used to mount volume.",
+            "value": "10.0.3.100",
+            "required": true
+        },
+        {
+            "name": "NFS_SERVER_PATH",
+            "description": "Path exported by NFS.",
+            "value": "/export/dss_nfs/jenkins-syndicate/jenkins-syndicate/omPvvgtBDM",
+            "required": true
+        }
+    ],
+    "objects": [
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "${APPLICATION_NAME}"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Rolling",
+                    "rollingParams": {
+                        "updatePeriodSeconds": 1,
+                        "intervalSeconds": 1,
+                        "timeoutSeconds": 600,
+                        "maxUnavailable": "25%",
+                        "maxSurge": "25%"
+                    },
+                    "resources": {}
+                },
+                "triggers": [
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "${APPLICATION_NAME}"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "${IMAGE_STREAM_NAME}:${IMAGE_STREAM_TAG}"
+                            }
+                        }
+                    }
+                ],
+                "replicas": 1,
+                "selector": {
+                    "app": "${APPLICATION_NAME}",
+                    "deploymentconfig": "${APPLICATION_NAME}"
+                },
+                "template": {
+                    "metadata": {
+                        "creationTimestamp": null,
+                        "labels": {
+                            "app": "${APPLICATION_NAME}",
+                            "deploymentconfig": "${APPLICATION_NAME}"
+                        }
+                    },
+                    "spec": {
+                        "volumes": [
+                            {
+                                "name": "${APPLICATION_NAME}-volume-1",
+                                "nfs": {
+                                    "server": "${NFS_SERVER}",
+                                    "path": "${NFS_SERVER_PATH}"
+                                }
+                            }                             
+                        ],
+                        "containers": [
+                            {
+                                "name": "${APPLICATION_NAME}",
+                                "image": "${IMAGE_STREAM_NAME}:${IMAGE_STREAM_TAG}",
+                                "ports": [
+                                    {
+                                        "containerPort": 8080,
+                                        "protocol": "TCP"
+                                    },
+                                    {
+                                        "containerPort": 50000,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "env": [
+                                    {
+                                        "name": "CI_DOCKER_HOST",
+                                        "value": "${CI_DOCKER_HOST}"
+                                    }
+                                ],                                
+                                "resources": {},
+                                "volumeMounts": [
+                                    {
+                                        "name": "${APPLICATION_NAME}-volume-1",
+                                        "mountPath": "/var/jenkins_home"
+                                    }                                    
+                                ],
+                                "terminationMessagePath": "/dev/termination-log",
+                                "imagePullPolicy": "Always"
+                            }
+                        ],
+                        "restartPolicy": "Always",
+                        "dnsPolicy": "ClusterFirst"
+                    }
+                }
+            },
+            "status": {}
+        },
+        {
+            "kind": "DeploymentConfig",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME_BUILDSERVICE}",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "${APPLICATION_NAME_BUILDSERVICE}"
+                }
+            },
+            "spec": {
+                "strategy": {
+                    "type": "Rolling",
+                    "rollingParams": {
+                        "updatePeriodSeconds": 1,
+                        "intervalSeconds": 1,
+                        "timeoutSeconds": 600,
+                        "maxUnavailable": "25%",
+                        "maxSurge": "25%"
+                    },
+                    "resources": {}
+                },
+                "triggers": [
+                    {
+                        "type": "ConfigChange"
+                    },
+                    {
+                        "type": "ImageChange",
+                        "imageChangeParams": {
+                            "automatic": true,
+                            "containerNames": [
+                                "${APPLICATION_NAME_BUILDSERVICE}"
+                            ],
+                            "from": {
+                                "kind": "ImageStreamTag",
+                                "name": "${IMAGE_STREAM_NAME_BUILDSERVICE}:${IMAGE_STREAM_TAG_BUILDSERVICE}"
+                            }
+                        }
+                    }                    
+                ],
+                "replicas": 1,
+                "selector": {
+                    "app": "${APPLICATION_NAME_BUILDSERVICE}",
+                    "deploymentconfig": "${APPLICATION_NAME_BUILDSERVICE}"
+                },
+                "template": {
+                    "metadata": {
+                        "creationTimestamp": null,
+                        "labels": {
+                            "app": "${APPLICATION_NAME_BUILDSERVICE}",
+                            "deploymentconfig": "${APPLICATION_NAME_BUILDSERVICE}"
+                        }
+                    },
+                    "spec": {
+                        "volumes": [
+                        ],
+                        "containers": [
+                            {
+                                "name": "${APPLICATION_NAME_BUILDSERVICE}",
+                                "image": "${IMAGE_STREAM_NAME_BUILDSERVICE}:${IMAGE_STREAM_TAG_BUILDSERVICE}",
+                                "ports": [
+                                    {
+                                        "containerPort": 3000,
+                                        "protocol": "TCP"
+                                    }
+                                ],
+                                "env": [
+                                ],                                
+                                "resources": {},
+                                "volumeMounts": [
+                                ],
+                                "terminationMessagePath": "/dev/termination-log",
+                                "imagePullPolicy": "Always"
+                            }                            
+                        ],
+                        "restartPolicy": "Always",
+                        "dnsPolicy": "ClusterFirst"
+                    }
+                }
+            },
+            "status": {}
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME}",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "${APPLICATION_NAME}"
+                }
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "8080-tcp",
+                        "protocol": "TCP",
+                        "port": 8080,
+                        "targetPort": 8080,
+                        "nodePort": 0
+                    },
+                    {
+                        "name": "50000-tcp",
+                        "protocol": "TCP",
+                        "port": 50000,
+                        "targetPort": 50000,
+                        "nodePort": 0
+                    }
+                ],
+                "selector": {
+                    "app": "${APPLICATION_NAME}",
+                    "deploymentconfig": "${APPLICATION_NAME}"
+                },
+                "type": "ClusterIP",
+                "sessionAffinity": "None"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        },
+        {
+            "kind": "Service",
+            "apiVersion": "v1",
+            "metadata": {
+                "name": "${APPLICATION_NAME_BUILDSERVICE}",
+                "creationTimestamp": null,
+                "labels": {
+                    "app": "${APPLICATION_NAME_BUILDSERVICE}"
+                }
+            },
+            "spec": {
+                "ports": [
+                    {
+                        "name": "3000-tcp",
+                        "protocol": "TCP",
+                        "port": 3000,
+                        "targetPort": 3000,
+                        "nodePort": 0
+                    }
+                ],
+                "selector": {
+                    "app": "${APPLICATION_NAME_BUILDSERVICE}",
+                    "deploymentconfig": "${APPLICATION_NAME_BUILDSERVICE}"
+                },
+                "type": "ClusterIP",
+                "sessionAffinity": "None"
+            },
+            "status": {
+                "loadBalancer": {}
+            }
+        }        
+    ]
+}

@@ -1,0 +1,35 @@
+---
+# This entire directory tree (rooted at the directory containing this
+# descriptor.yml file) is a sample platform application package.
+#
+# ROOTDIR/descriptor.yml (required name) is the top-level app
+# descriptor for this app.
+ 
+# APP PROPERTIES (all required unless otherwise specified):
+ 
+# URL friendly code name for the app
+name: buildservice
+ 
+# Human-readable app name.
+# TODO: multi-language support
+display_name: "Build Service CI"
+
+# Application-level version number. Must be major.minor.etc style,
+# with as many components as you like, with the usual sort order for
+# determining which of two versions is newer. (No "newer" ordering
+# actually implemented in first release.)
+version: 1.0.0.0
+
+ 
+# Note: You can publish a given (name, version) combo exactly once
+# to a platform instance. In other words, name + version is a
+# primary key for this app version. (The "display-name" field is for display
+# only and can be anything.)
+
+# Tell appformer to protect us during casual undeploy -A
+# also will cause /sytem/ static routes to be created
+is_system_app: True
+
+#This is for adding default tenant static routes
+tenants:
+ - default
