@@ -82,8 +82,6 @@ def buildWithMavenContainer(projectDirectory, imagetag)
 
 def buildDockerImages(images, projectDirectory, imagetag)
 {
-    def appimage, testimage
-    
     parallel "Building Docker app image":
     {
         images.app = docker.build("java-demo:${imagetag}", "${projectDirectory}/app")
