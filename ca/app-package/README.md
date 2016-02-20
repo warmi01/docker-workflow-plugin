@@ -92,6 +92,28 @@ curl -X POST http://appformer-myproject.app.services.slogvpc4.caplatformdev.com/
 ```
 Once this is complete the PODs will have been deployed and should be running.
 
+#### Verify engines are accessible via service registry routes
+1. Obtain the service IP address of the Service Registry on Openshift
+```
+oc status
+``` 
+The entry for the Service Registry should look something like this.  The IP address for the service is on svc/serviceregistry line.
+```
+svc/serviceregistry-1 - 172.30.57.61:80 -> 8080
+  dc/serviceregistry-serviceregistry deploys ose3vdr1.services.slogvpc4.caplatformdev.com:5000/platform/serviceregistry-serviceregistry:1.0.2.57 (manual)
+    #1 deployed about an hour ago - 1 pod
+  exposed by route/serviceregistry-serviceregistry
+```
+2. Send a request to the Build Service via the Service Registry
+```
+curl <serviceregistry_ip>/default/ci/buildservice
+```
+3. Send a request to Jenkins via the Service Registry
+```
+curl <serviceregistry_ip>/default/ci/jenkins
+```
+
+
 #### Undeploy app
 This is needed when you need to push up new changes and to redeploy.
 You also need to do this if you decide to delete the app from Appformer.
