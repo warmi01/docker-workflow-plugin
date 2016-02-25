@@ -18,7 +18,7 @@ display_name: "Build Service CI"
 # with as many components as you like, with the usual sort order for
 # determining which of two versions is newer. (No "newer" ordering
 # actually implemented in first release.)
-version: 1.0.0.0
+version: @build.number@
 
  
 # Note: You can publish a given (name, version) combo exactly once

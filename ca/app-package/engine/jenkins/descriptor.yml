@@ -4,12 +4,12 @@
 
 
 name: jenkins
-version: 1.0.0.0
+version: @build.number@
 display_name: "Jenkins"
 packaging: docker
 docker_image: "platform/buildservice-jenkins"
 docker_vdr: True
-docker_image_tag: 1.0.0.0
+docker_image_tag: @image.tag@
 docker_ports:
     - port: 8080
 env_vars:
