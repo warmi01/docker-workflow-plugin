@@ -10,6 +10,7 @@ packaging: docker
 docker_image: "platform/buildservice-buildservice"
 docker_vdr: True
 docker_image_tag: @image.tag@
+max_memory: 512
 docker_ports:
     - port: 3000
 env_vars:
