@@ -59,6 +59,9 @@ COPY gen-security-data.sh /usr/local/bin/gen-security-data.sh
 RUN /usr/local/bin/gen-security-data.sh /tmp/files/regup/sec
 COPY run-demo.sh /usr/local/bin/run-demo.sh
 
+# Overrides Jenkins Update Center URL with one that seems to work in all environments
+ENV JENKINS_UC http://updates.jenkins-ci.org
+
 COPY plugins.txt docker-workflow-version.txt /tmp/files/
 RUN sed -i "s/@VERSION@/`cat /tmp/files/docker-workflow-version.txt`/g" /tmp/files/plugins.txt
 RUN /usr/local/bin/plugins.sh /tmp/files/plugins.txt
