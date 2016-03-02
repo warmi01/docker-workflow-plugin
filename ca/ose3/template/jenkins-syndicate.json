@@ -48,7 +48,7 @@
         {
             "name": "CI_DOCKER_HOST",
             "description": "Remote Docker host for CI use",
-            "value": "ose3master1.services.slogvpc4.caplatformdev.com:32375",
+            "value": "ose3master1:32375",
             "required": true
         },
         {
@@ -148,11 +148,15 @@
                                         "value": "${CI_DOCKER_HOST}"
                                     }
                                 ],                                
-                                "resources": {},
+                                "resources": {
+                                    "limits": {
+                                        "memory": "2Gi"
+                                    }
+                                },
                                 "volumeMounts": [
                                     {
                                         "name": "${APPLICATION_NAME}-volume-1",
-                                        "mountPath": "/var/jenkins_home"
+                                        "mountPath": "/var/jenkins_home_ca"
                                     }                                    
                                 ],
                                 "terminationMessagePath": "/dev/termination-log",
@@ -234,7 +238,11 @@
                                 ],
                                 "env": [
                                 ],                                
-                                "resources": {},
+                                "resources": {
+                                    "limits": {
+                                        "memory": "512Mi"
+                                    }
+                                },
                                 "volumeMounts": [
                                 ],
                                 "terminationMessagePath": "/dev/termination-log",
