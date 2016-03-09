@@ -52,6 +52,18 @@
             "required": true
         },
         {
+            "name": "CI_IMAGE_REGISTRY",
+            "description": "VDR Image registry",
+            "value": "ose3vdr1:5000",
+            "required": true
+        },
+        {
+            "name": "CI_IMAGE_REGISTRY_URL",
+            "description": "VDR Image registry URL",
+            "value": "http://ose3vdr1:5000",
+            "required": true
+        },
+        {
             "name": "NFS_SERVER",
             "description": "NFS server name used to mount volume.",
             "value": "10.0.3.100",
@@ -146,6 +158,10 @@
                                     {
                                         "name": "CI_DOCKER_HOST",
                                         "value": "${CI_DOCKER_HOST}"
+                                    },
+                                    {
+                                        "name": "CI_IMAGE_REGISTRY_URL",
+                                        "value": "${CI_IMAGE_REGISTRY_URL}"
                                     }
                                 ],                                
                                 "resources": {
@@ -237,6 +253,10 @@
                                     }
                                 ],
                                 "env": [
+                                    {
+                                        "name": "CI_IMAGE_REGISTRY",
+                                        "value": "${CI_IMAGE_REGISTRY}"
+                                    }
                                 ],                                
                                 "resources": {
                                     "limits": {

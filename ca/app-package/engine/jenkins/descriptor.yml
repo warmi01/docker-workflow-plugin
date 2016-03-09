@@ -19,6 +19,9 @@ env_vars:
     # container.
     - name: CI_DOCKER_HOST
       value: ose3master1:32375
+    # Docker image registry
+    - name: CI_IMAGE_REGISTRY_URL
+      value: http://ose3vdr1:5000
     # Service registry path to Build Service engine
     - name: BUILD_SERVICE_SR_PATH
       value: /default/ci/buildservice

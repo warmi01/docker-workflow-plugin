@@ -17,6 +17,9 @@ env_vars:
     # Service registry path to Jenkins engine
     - name: JENKINS_SR_PATH
       value: /default/ci/jenkins
+    # Docker image registry
+    - name: CI_IMAGE_REGISTRY
+      value: ose3vdr1:5000
 tenant_routes:
     - path: /:tenant/ci/buildservice
       servicePath: /:postFix
