@@ -162,6 +162,14 @@
                                     {
                                         "name": "CI_IMAGE_REGISTRY_URL",
                                         "value": "${CI_IMAGE_REGISTRY_URL}"
+                                    },
+                                    {
+                                        "name": "SERVICE_REGISTRY_HOSTNAME",
+                                        "value": "build-service:3000"
+                                    },
+                                    {
+                                        "name": "BUILD_SERVICE_SR_PATH",
+                                        "value": ""
                                     }
                                 ],                                
                                 "resources": {
@@ -256,7 +264,11 @@
                                     {
                                         "name": "CI_IMAGE_REGISTRY",
                                         "value": "${CI_IMAGE_REGISTRY}"
-                                    }
+                                    },
+                                    {
+                                        "name": "NODE_ENV",
+                                        "value": "development"
+                                    }                                    
                                 ],                                
                                 "resources": {
                                     "limits": {
