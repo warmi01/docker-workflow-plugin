@@ -24,6 +24,10 @@ env_vars:
     # Service registry path to Build Service engine
     - name: BUILD_SERVICE_SR_PATH
       value: /default/ci/buildservice
+    # Variable used to pass options to Jenkins on startup
+    # --prefix changes Jenkins base path to match Service registry path
+    - name: JENKINS_OPTS
+      value: --prefix=/default/ci/jenkins
 tenant_routes:
     - path: /:tenant/ci/jenkins
-      servicePath: /:postFix
+      servicePath: /default/ci/jenkins/:postFix
