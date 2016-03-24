@@ -16,7 +16,7 @@ docker build -t dind-syndicate:1.10 .
 #### Start DIND Container
 Start the container on the Openshift Docker host.
 ```
-docker run --privileged -p 32375:2375 -e JENKINS_HOME_NFS_PATH=<NFS path> -d dind-syndicate:1.10
+docker run --privileged -p 32375:2375 -e JENKINS_HOME_NFS_PATH=<NFS path> -d dind-syndicate:1.10 --insecure-registry ose3vdr1:5000
 ```
 NOTE:
 The Docker daemon listens to remote requests on port 2375.  To avoid conflicts with the host
@@ -44,6 +44,13 @@ For example:
 ```
 Here's a [wiki link](https://cawiki.ca.com/display/intplatform/Install+Jenkins+on+OSE3#InstallJenkinsonOSE3-AllocateNFSStorage) on how we're getting NFS storage from DSS for Jenkins.
 This only applies when not using Appformer to deploy Jenkins.
+
+NOTE:
+To be able to push images to an external docker registry, the Docker daemon needs to know about it.  In our case we
+use an insecure registry, ose3vdr1:5000.  The following option needs to be passed to specify the registry when starting the container:
+```
+--insecure-registry ose3vdr1:5000
+```
 
 #### Getting Shell Access to DIND Container
 The container is running Alpine Linux and uses an ash shell (not bash).
