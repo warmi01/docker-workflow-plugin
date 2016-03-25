@@ -13,6 +13,9 @@ max_memory: 512
 docker_ports:
     - port: 3000
 env_vars:
+    # Service registry path to this engine
+    - name: BUILD_SERVICE_SR_PATH
+      value: /default/ci/buildservice
     # Service registry path to Jenkins engine
     - name: JENKINS_SR_PATH
       value: /default/ci/jenkins
